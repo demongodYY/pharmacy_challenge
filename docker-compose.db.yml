@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: my_postgres_db
+    ports:
+      - "5432:5432"
+    environment: # Just for TEST!!!
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: mydatabase
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U myuser -d mydatabase"]
+      interval: 10s
+      timeout: 5s
+      retries: 5

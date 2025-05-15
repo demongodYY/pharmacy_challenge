@@ -1,0 +1,49 @@
+# Stage 1: Build the application using Gradle
+FROM gradle:8.7-jdk21 AS builder
+# gradle:8.7-jdk21 is a common image for Gradle builds with JDK 21
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the gradlew wrapper, build.gradle.kts, and settings.gradle (if you have one)
+COPY gradlew .
+COPY gradle gradle
+COPY build.gradle.kts .
+COPY settings.gradle.kts .  # Copy settings.gradle.kts if present
+# If you use settings.gradle (Groovy), change the line above to:
+# COPY settings.gradle .
+
+# Make gradlew executable
+RUN chmod +x ./gradlew
+
+# Copy the source code
+# This should copy src/main/java and src/main/resources
+COPY src src
+
+# Build the application, create the executable JAR
+# Skip tests during Docker build for faster builds; run tests in CI/CD pipeline
+# The --no-daemon flag is good practice for CI/Docker environments
+RUN ./gradlew bootJar --no-daemon -x test
+
+# Stage 2: Create the runtime image
+FROM openjdk:21-jre-slim
+# Using a slim JRE image for a smaller final image size
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the executable JAR from the builder stage
+# The JAR name is typically <project-name>-<version>.jar.
+# The wildcard *.jar will pick it up.
+COPY --from=builder /app/build/libs/*.jar app.jar
+
+# Expose the application port (as defined in application.properties and docker-compose.yml)
+EXPOSE 8080
+
+# Environment variable for JVM options (can be overridden in docker-compose.yml)
+# Example: JAVA_OPTS="-Xms256m -Xmx512m"
+ENV JAVA_OPTS=""
+
+# Command to run the application
+# The exec form is used so that signals are passed correctly to the JVM
+ENTRYPOINT ["java", ${JAVA_OPTS}, "-jar", "/app/app.jar"]
