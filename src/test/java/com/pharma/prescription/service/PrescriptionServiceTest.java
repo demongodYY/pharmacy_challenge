@@ -4,6 +4,8 @@ import com.pharma.prescription.dto.PrescriptionDto;
 import com.pharma.prescription.dto.PrescriptionItemRequestDto;
 import com.pharma.prescription.dto.PrescriptionRequestDto;
 import com.pharma.prescription.entity.*;
+import com.pharma.prescription.entity.enumration.AuditLogStatus;
+import com.pharma.prescription.entity.enumration.PrescriptionStatus;
 import com.pharma.prescription.exception.BusinessRuleException;
 import com.pharma.prescription.exception.ResourceNotFoundException;
 import com.pharma.prescription.repository.*;
@@ -15,10 +17,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.time.LocalDate;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -38,6 +37,10 @@ class PrescriptionServiceTest {
   private PharmacyDrugAllocationRepository allocationRepository;
   @Mock
   private DataMapper dataMapper;
+  @Mock
+  private AuditLogService auditLogService;
+  @Mock
+  private PrescriptionStatusService prescriptionStatusService;
 
   @InjectMocks
   private PrescriptionService prescriptionService;
@@ -224,5 +227,79 @@ class PrescriptionServiceTest {
     when(allocationRepository.findByPharmacyPublicIdAndDrugPublicId(pharmacyId, drugId)).thenReturn(Optional.of(allocation));
 
     assertThrows(BusinessRuleException.class, () -> prescriptionService.create(requestDto));
+  }
+  
+  @Test
+  void fulfillPrescription_shouldFulfillSuccessfully_whenStockIsSufficient() {
+    UUID prescriptionId = UUID.randomUUID();
+    Prescription prescription = mock(Prescription.class);
+    Pharmacy pharmacy = mock(Pharmacy.class);
+    PrescriptionItem item = mock(PrescriptionItem.class);
+    Drug drug = mock(Drug.class);
+
+    when(prescriptionRepository.findByPrescriptionId(prescriptionId)).thenReturn(Optional.of(prescription));
+    when(prescription.getStatus()).thenReturn(PrescriptionStatus.PENDING);
+    when(prescription.getPrescriptionItems()).thenReturn(Set.of(item));
+    when(item.getDrug()).thenReturn(drug);
+    when(item.getDosage()).thenReturn(5);
+    when(drug.getStock()).thenReturn(10);
+    when(drug.getName()).thenReturn("TestDrug");
+    when(drug.getDrugId()).thenReturn(UUID.randomUUID());
+    when(prescription.getPatientId()).thenReturn("patient1");
+    when(prescription.getPharmacy()).thenReturn(pharmacy);
+    when(pharmacy.getPharmacyId()).thenReturn(UUID.randomUUID());
+
+    Prescription savedPrescription = mock(Prescription.class);
+    when(prescriptionRepository.save(any(Prescription.class))).thenReturn(savedPrescription);
+    PrescriptionDto dto = mock(PrescriptionDto.class);
+    when(dataMapper.toPrescriptionDto(savedPrescription)).thenReturn(dto);
+    when(savedPrescription.getPrescriptionItems()).thenReturn(Set.of(item));
+
+    PrescriptionDto result = prescriptionService.fulfillPrescription(prescriptionId);
+
+    assertEquals(dto, result);
+    verify(drugRepository).saveAll(anyList());
+    verify(auditLogService).logAttempt(any(), any(), any(), any(), any(), eq(AuditLogStatus.SUCCESS), isNull());
+  }
+
+  @Test
+  void fulfillPrescription_shouldFail_whenStockIsInsufficient() {
+    UUID prescriptionId = UUID.randomUUID();
+    Prescription prescription = mock(Prescription.class);
+    Pharmacy pharmacy = mock(Pharmacy.class);
+    PrescriptionItem item = mock(PrescriptionItem.class);
+    Drug drug = mock(Drug.class);
+
+    when(prescriptionRepository.findByPrescriptionId(prescriptionId)).thenReturn(Optional.of(prescription));
+    when(prescription.getStatus()).thenReturn(PrescriptionStatus.PENDING);
+    when(prescription.getPrescriptionItems()).thenReturn(Set.of(item));
+    when(item.getDrug()).thenReturn(drug);
+    when(item.getDosage()).thenReturn(15);
+    when(drug.getStock()).thenReturn(10);
+    when(drug.getName()).thenReturn("TestDrug");
+    when(drug.getDrugId()).thenReturn(UUID.randomUUID());
+    when(prescription.getPatientId()).thenReturn("patient1");
+    when(prescription.getPharmacy()).thenReturn(pharmacy);
+    when(pharmacy.getPharmacyId()).thenReturn(UUID.randomUUID());
+
+    assertThrows(BusinessRuleException.class, () -> prescriptionService.fulfillPrescription(prescriptionId));
+    verify(prescriptionStatusService).updatePrescriptionStatus(prescription, PrescriptionStatus.FAILED_FULFILLMENT);
+    verify(auditLogService).logAttempt(any(), any(), any(), any(), isNull(), eq(AuditLogStatus.FAILURE), contains("Insufficient stock"));
+  }
+
+  @Test
+  void fulfillPrescription_shouldThrow_whenPrescriptionNotFound() {
+    UUID prescriptionId = UUID.randomUUID();
+    when(prescriptionRepository.findByPrescriptionId(prescriptionId)).thenReturn(Optional.empty());
+    assertThrows(ResourceNotFoundException.class, () -> prescriptionService.fulfillPrescription(prescriptionId));
+  }
+
+  @Test
+  void fulfillPrescription_shouldThrow_whenStatusNotPending() {
+    UUID prescriptionId = UUID.randomUUID();
+    Prescription prescription = mock(Prescription.class);
+    when(prescriptionRepository.findByPrescriptionId(prescriptionId)).thenReturn(Optional.of(prescription));
+    when(prescription.getStatus()).thenReturn(PrescriptionStatus.FULFILLED);
+    assertThrows(BusinessRuleException.class, () -> prescriptionService.fulfillPrescription(prescriptionId));
   }
 }

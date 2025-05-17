@@ -1,6 +1,5 @@
 package com.pharma.prescription.dto;
 
-import com.pharma.prescription.entity.PrescriptionItem;
 import com.pharma.prescription.entity.enumration.PrescriptionStatus;
 import lombok.Value;
 
@@ -16,7 +15,7 @@ public class PrescriptionDto {
   UUID prescriptionId;
   String patientId;
   PharmacyDto pharmacy;
-  Set<PrescriptionItem> prescriptionItems;
+  Set<PrescriptionItemDto> prescriptionItems;
   PrescriptionStatus status;
   LocalDateTime prescriptionDate;
   LocalDateTime fulfillmentDate;

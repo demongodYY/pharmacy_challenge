@@ -39,6 +39,7 @@ public class Prescription {
   private Set<PrescriptionItem> prescriptionItems = new HashSet<>();
 
   @Getter
+  @Setter
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   private PrescriptionStatus status;
@@ -50,6 +51,9 @@ public class Prescription {
   @Getter
   @Setter
   private LocalDateTime fulfillmentDate;
+
+  @Version
+  private Long version;
 
   @PrePersist
   protected void onCreate() {

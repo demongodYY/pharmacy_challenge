@@ -40,7 +40,9 @@ public class DrugService {
   }
 
   @Transactional
-  public List<PharmacyDrugAllocationDto> allocateDrugToPharmacy(UUID drugId, List<PharmacyDragAllocationRequestDto> pharmacyDragAllocationRequestDtos) {
+  public List<PharmacyDrugAllocationDto> allocateDrugToPharmacy(
+          UUID drugId,
+          List<PharmacyDragAllocationRequestDto> pharmacyDragAllocationRequestDtos) {
     var drug = drugRepository.findByDrugId(drugId)
             .orElseThrow(() -> new RuntimeException("Drug not found"));
     var totalAllocated = pharmacyDragAllocationRequestDtos.stream()

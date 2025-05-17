@@ -33,7 +33,9 @@ public class DragController {
           description = "Drug allocated successfully",
           content = @Content(mediaType = "application/json",
                   schema = @Schema(implementation = PharmacyDrugAllocationDto.class)))
-  public ResponseEntity<List<PharmacyDrugAllocationDto>> allocateDrugToPharmacy(@PathVariable("id") UUID drugId, @RequestBody List<PharmacyDragAllocationRequestDto> pharmacyDragAllocationRequestDtos) {
+  public ResponseEntity<List<PharmacyDrugAllocationDto>> allocateDrugToPharmacy(
+          @PathVariable("id") UUID drugId,
+          @RequestBody List<PharmacyDragAllocationRequestDto> pharmacyDragAllocationRequestDtos) {
     return ResponseEntity.ok().body(drugService.allocateDrugToPharmacy(drugId, pharmacyDragAllocationRequestDtos));
   }
 
