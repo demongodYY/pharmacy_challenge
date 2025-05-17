@@ -1,19 +1,13 @@
 package com.pharma.prescription.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.Column;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.CascadeType;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Represents a pharmacy in the system.
@@ -29,25 +23,25 @@ public class Pharmacy {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
+  @Column(name = "pharmacy_id", updatable = false, nullable = false, unique = true)
+  private UUID pharmacyId;
+
   @Column(nullable = false, unique = true)
   private String name;
 
   @Column(nullable = false)
   private String address;
 
-  // Manages the specific drugs this pharmacy is contracted for and their allocations
-  @OneToMany(mappedBy = "pharmacy", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(mappedBy = "pharmacy", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
   private Set<PharmacyDrugAllocation> drugAllocations = new HashSet<>();
 
-  // Helper method to add a drug allocation
-  public void addDrugAllocation(PharmacyDrugAllocation allocation) {
-    drugAllocations.add(allocation);
-    allocation.setPharmacy(this);
-  }
+  @OneToMany(mappedBy = "pharmacy", fetch = FetchType.LAZY)
+  private Set<Prescription> prescriptions;
 
-  // Helper method to remove a drug allocation
-  public void removeDrugAllocation(PharmacyDrugAllocation allocation) {
-    drugAllocations.remove(allocation);
-    allocation.setPharmacy(null);
+  @PrePersist
+  protected void onCreate() {
+    if (this.pharmacyId == null) {
+      this.pharmacyId = UUID.randomUUID();
+    }
   }
 }

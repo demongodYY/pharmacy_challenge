@@ -1,0 +1,85 @@
+@startuml
+!theme plain
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam linetype ortho
+hide empty members
+
+title Pharma Supply Chain ER Diagram
+
+entity Drug {
+  id: Long <<PK>>
+  publicId: UUID <<Unique>>
+  name: String
+  manufacturer: String
+  batchNumber: String
+  expiryDate: LocalDate
+  stock: Integer
+  version: Long
+}
+
+entity Pharmacy {
+  id: Long <<PK>>
+  publicId: UUID <<Unique>>
+  name: String
+  address: String
+}
+
+entity PharmacyDrugAllocation {
+  id: Long <<PK>>
+  pharmacy_id: Long <<FK>>
+  drug_id: Long <<FK>>
+  contracted: Boolean
+  allocatedAmount: Integer
+}
+
+entity Prescription {
+  id: Long <<PK>>
+  publicId: UUID <<Unique>>
+  pharmacy_id: Long <<FK>>
+  patientId: String
+  status: PrescriptionStatus
+  prescriptionDate: LocalDateTime
+  fulfillmentDate: LocalDateTime
+  failureReason: String
+}
+
+entity PrescriptionItem {
+  id: Long <<PK>>
+  prescription_id: Long <<FK>>
+  drug_id: Long <<FK>>
+  dosage: String
+  requestedQuantity: Integer
+  dispensedQuantity: Integer
+}
+
+entity AuditLog {
+  id: Long <<PK>>
+  prescriptionPublicId: UUID ' Conceptual FK to Prescription.publicId
+  patientId: String
+  pharmacyPublicId: UUID ' Conceptual FK to Pharmacy.publicId
+  drugsRequested: String
+  drugsDispensed: String
+  status: AuditLogStatus
+  failureReasons: String
+  timestamp: LocalDateTime
+}
+
+' Relationships:
+' ||--o{ : One to Zero-or-More (FK on the "many" side)
+' ||--|{ : One to One-or-More (FK on the "many" side, child is mandatory)
+
+Pharmacy ||--o{ PharmacyDrugAllocation : "allocates for"
+Drug     ||--o{ PharmacyDrugAllocation : "is allocated by"
+
+Pharmacy ||--o{ Prescription : "handles"
+
+' PrescriptionItem is dependent on Prescription and a Prescription must have at least one item.
+Prescription ||--|{ PrescriptionItem : "contains"
+Drug         ||--o{ PrescriptionItem : "is prescribed in"
+
+
+note "AuditLog references publicId fields from Prescription\nand Pharmacy, not direct foreign keys to their primary keys (id)." as AuditNote
+AuditLog .[dashed]. AuditNote
+
+@enduml

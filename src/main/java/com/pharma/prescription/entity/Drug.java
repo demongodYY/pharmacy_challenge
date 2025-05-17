@@ -2,16 +2,14 @@ package com.pharma.prescription.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDate;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
 @Table(name="drugs")
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Drug {
@@ -34,9 +32,21 @@ public class Drug {
   @Column(name = "expiry_date", nullable = false)
   private LocalDate expiryDate;
 
+  @OneToMany(mappedBy = "drug", fetch = FetchType.LAZY)
+  private Set<PharmacyDrugAllocation> pharmacyAllocations;
+
+  @OneToMany(mappedBy = "drug")
+  private Set<PrescriptionItem> prescriptionItems;
+
   @Column(nullable = false)
   private int stock; // Represents the current available quantity of the drug
 
+  @PrePersist // 在实体持久化到数据库之前执行
+  protected void onCreate() {
+    if (this.drugId == null) {
+      this.drugId = UUID.randomUUID(); // 生成一个新的随机 UUID
+    }
+  }
 
   public boolean isExpired() {
     return LocalDate.now().isAfter(this.expiryDate);
