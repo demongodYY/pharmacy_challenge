@@ -1,6 +1,7 @@
 package com.pharma.prescription.service;
 
 import com.pharma.prescription.dto.PharmacyDto;
+import com.pharma.prescription.dto.PharmacyRequestDto;
 import com.pharma.prescription.entity.Pharmacy;
 import com.pharma.prescription.repository.PharmacyRepository;
 import com.pharma.prescription.shared.DataMapper;
@@ -42,5 +43,27 @@ class PharmacyServiceTest {
     verify(pharmacyRepository, times(1)).findAll();
     verify(dataMapper, times(1)).toPharmacyDto(pharmacyEntity1);
     verify(dataMapper, times(1)).toPharmacyDto(pharmacyEntity2);
+  }
+
+  @Test
+  void create_savesPharmacyAndReturnsDto() {
+    PharmacyRepository pharmacyRepository = mock(PharmacyRepository.class);
+    DataMapper dataMapper = mock(DataMapper.class);
+
+    var requestDto = new PharmacyRequestDto("Pharmacy X", "789 Oak Ave");
+    var savedPharmacy = new Pharmacy("Pharmacy X", "789 Oak Ave");
+    var pharmacyDto = new PharmacyDto(java.util.UUID.randomUUID(), "Pharmacy X", "789 Oak Ave", null, null);
+
+    when(pharmacyRepository.save(any(Pharmacy.class))).thenReturn(savedPharmacy);
+    when(dataMapper.toPharmacyDto(savedPharmacy)).thenReturn(pharmacyDto);
+
+    PharmacyService pharmacyService = new PharmacyService(pharmacyRepository, dataMapper);
+
+    PharmacyDto result = pharmacyService.create(requestDto);
+
+    assertNotNull(result);
+    assertEquals(pharmacyDto, result);
+    verify(pharmacyRepository, times(1)).save(any(Pharmacy.class));
+    verify(dataMapper, times(1)).toPharmacyDto(savedPharmacy);
   }
 }

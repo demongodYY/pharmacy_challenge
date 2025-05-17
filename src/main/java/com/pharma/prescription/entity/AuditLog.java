@@ -2,14 +2,17 @@ package com.pharma.prescription.entity;
 
 import com.pharma.prescription.entity.enumration.AuditLogStatus;
 import jakarta.persistence.*;
-import lombok.NoArgsConstructor;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Data
 @Entity
 @Table(name = "audit_logs")
-@NoArgsConstructor
+@RequiredArgsConstructor
+
 public class AuditLog {
 
   @Id

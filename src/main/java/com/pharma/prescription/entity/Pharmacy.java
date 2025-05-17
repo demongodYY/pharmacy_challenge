@@ -1,14 +1,15 @@
 package com.pharma.prescription.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 
-/** Represents a pharmacy in the system. */
+@Data
 @Entity
 @Table(name = "pharmacies")
 @NoArgsConstructor
@@ -19,29 +20,29 @@ public class Pharmacy {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Getter
   @Column(name = "pharmacy_id", updatable = false, nullable = false, unique = true)
   private UUID pharmacyId;
 
-  @Getter
   @Column(nullable = false, unique = true)
   private String name;
 
-  @Getter
   @Column(nullable = false)
   private String address;
 
-  @Getter
   @OneToMany(
-      mappedBy = "pharmacy",
-      cascade = CascadeType.ALL,
-      fetch = FetchType.LAZY,
-      orphanRemoval = true)
+          mappedBy = "pharmacy",
+          cascade = CascadeType.ALL,
+          fetch = FetchType.LAZY,
+          orphanRemoval = true)
   private Set<PharmacyDrugAllocation> drugAllocations = new HashSet<>();
 
-  @Getter
   @OneToMany(mappedBy = "pharmacy", fetch = FetchType.LAZY)
   private Set<Prescription> prescriptions;
+
+  public Pharmacy(String name, String address) {
+    this.name = name;
+    this.address = address;
+  }
 
   @PrePersist
   protected void onCreate() {

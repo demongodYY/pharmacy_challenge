@@ -10,10 +10,10 @@ public class DataMapper {
     if (pharmacy == null) return null;
 
     return new PharmacyDto(
-        pharmacy.getPharmacyId(),
-        pharmacy.getName(),
-        pharmacy.getAddress(),
-        pharmacy.getDrugAllocations(),
-        pharmacy.getPrescriptions());
+            pharmacy.getPharmacyId(),
+            pharmacy.getName(),
+            pharmacy.getAddress(),
+            pharmacy.getDrugAllocations(),
+            pharmacy.getPrescriptions());
   }
 }
