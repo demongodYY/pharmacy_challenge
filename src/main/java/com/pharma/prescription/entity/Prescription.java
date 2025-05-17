@@ -2,14 +2,13 @@ package com.pharma.prescription.entity;
 
 import com.pharma.prescription.entity.enumration.PrescriptionStatus;
 import jakarta.persistence.*;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
-
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Table(name = "prescriptions")
@@ -32,7 +31,11 @@ public class Prescription {
   @JoinColumn(name = "pharmacy_id", nullable = false)
   private Pharmacy pharmacy;
 
-  @OneToMany(mappedBy = "prescription", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+  @OneToMany(
+      mappedBy = "prescription",
+      cascade = CascadeType.ALL,
+      orphanRemoval = true,
+      fetch = FetchType.EAGER)
   private Set<PrescriptionItem> prescriptionItems = new HashSet<>();
 
   @Enumerated(EnumType.STRING)

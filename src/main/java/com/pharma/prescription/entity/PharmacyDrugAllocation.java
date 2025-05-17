@@ -6,8 +6,9 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "pharmacy_drug_allocations",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"pharmacy_id", "drug_id"})) // Ensures a drug is allocated only once per pharmacy
+@Table(
+    name = "pharmacy_drug_allocations",
+    uniqueConstraints = @UniqueConstraint(columnNames = {"pharmacy_id", "drug_id"}))
 @NoArgsConstructor
 @AllArgsConstructor
 public class PharmacyDrugAllocation {

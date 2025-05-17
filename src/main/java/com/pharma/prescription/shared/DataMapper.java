@@ -1,12 +1,8 @@
 package com.pharma.prescription.shared;
 
-
-import com.pharma.prescription.dto.*;
-import com.pharma.prescription.entity.*;
+import com.pharma.prescription.dto.PharmacyDto;
+import com.pharma.prescription.entity.Pharmacy;
 import org.springframework.stereotype.Component;
-
-import java.util.Collections;
-import java.util.stream.Collectors;
 
 @Component
 public class DataMapper {
@@ -14,14 +10,10 @@ public class DataMapper {
     if (pharmacy == null) return null;
 
     return new PharmacyDto(
-            pharmacy.getPharmacyId(),
-            pharmacy.getName(),
-            pharmacy.getAddress(),
-            pharmacy.getDrugAllocations(),
-            pharmacy.getPrescriptions()
-           );
+        pharmacy.getPharmacyId(),
+        pharmacy.getName(),
+        pharmacy.getAddress(),
+        pharmacy.getDrugAllocations(),
+        pharmacy.getPrescriptions());
   }
-
-
-
 }

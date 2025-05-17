@@ -1,18 +1,14 @@
 package com.pharma.prescription.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-/**
- * Represents a pharmacy in the system.
- */
+/** Represents a pharmacy in the system. */
 @Entity
 @Table(name = "pharmacies")
 @NoArgsConstructor
@@ -36,7 +32,11 @@ public class Pharmacy {
   private String address;
 
   @Getter
-  @OneToMany(mappedBy = "pharmacy", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+  @OneToMany(
+      mappedBy = "pharmacy",
+      cascade = CascadeType.ALL,
+      fetch = FetchType.LAZY,
+      orphanRemoval = true)
   private Set<PharmacyDrugAllocation> drugAllocations = new HashSet<>();
 
   @Getter

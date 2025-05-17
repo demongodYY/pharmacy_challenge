@@ -2,7 +2,6 @@ package com.pharma.prescription.entity;
 
 import com.pharma.prescription.entity.enumration.AuditLogStatus;
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -29,11 +28,11 @@ public class AuditLog {
   @Column(nullable = false)
   private UUID pharmacyPublicId;
 
-  @Column(columnDefinition = "TEXT") // Store as JSON string or similar
-  private String drugsRequested; // e.g., [{"drugPublicId": "uuid", "quantity": 2, "dosage": "10mg"}]
+  @Column(columnDefinition = "TEXT")
+  private String drugsRequested;
 
-  @Column(columnDefinition = "TEXT") // Store as JSON string or similar
-  private String drugsDispensed; // if successful, same format
+  @Column(columnDefinition = "TEXT")
+  private String drugsDispensed;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
@@ -48,7 +47,7 @@ public class AuditLog {
   @PrePersist
   protected void onCreate() {
     if (this.logId == null) {
-      this.logId = UUID.randomUUID(); // 生成一个新的随机 UUID
+      this.logId = UUID.randomUUID();
     }
     if (timestamp == null) {
       timestamp = LocalDateTime.now();

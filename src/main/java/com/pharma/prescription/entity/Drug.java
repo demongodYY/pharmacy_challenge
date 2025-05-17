@@ -9,11 +9,11 @@ import java.util.Set;
 import java.util.UUID;
 
 @Entity
-@Table(name="drugs")
+@Table(name = "drugs")
 @NoArgsConstructor
 @AllArgsConstructor
 public class Drug {
-  @Id // Marks this field as the primary key
+  @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY) // Configures auto-generation of the ID
   private Long id;
 
@@ -39,17 +39,16 @@ public class Drug {
   private Set<PrescriptionItem> prescriptionItems;
 
   @Column(nullable = false)
-  private int stock; // Represents the current available quantity of the drug
+  private int stock;
 
-  @PrePersist // 在实体持久化到数据库之前执行
+  @PrePersist
   protected void onCreate() {
     if (this.drugId == null) {
-      this.drugId = UUID.randomUUID(); // 生成一个新的随机 UUID
+      this.drugId = UUID.randomUUID();
     }
   }
 
   public boolean isExpired() {
     return LocalDate.now().isAfter(this.expiryDate);
   }
-
 }

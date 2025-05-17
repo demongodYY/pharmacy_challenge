@@ -1,16 +1,15 @@
 package com.pharma.prescription.service;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
 import com.pharma.prescription.dto.PharmacyDto;
 import com.pharma.prescription.entity.Pharmacy; // Import the correct entity
 import com.pharma.prescription.repository.PharmacyRepository;
 import com.pharma.prescription.shared.DataMapper;
-import org.junit.jupiter.api.Test;
-
 import java.util.Arrays;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import org.junit.jupiter.api.Test;
 
 class PharmacyServiceTest {
 
@@ -22,7 +21,8 @@ class PharmacyServiceTest {
     Pharmacy pharmacyEntity1 = mock(Pharmacy.class); // Use the actual entity
     Pharmacy pharmacyEntity2 = mock(Pharmacy.class);
     var pharmacyDto1 = new PharmacyDto(java.util.UUID.randomUUID(), "123 Main St", "", null, null);
-    var pharmacyDto2 = new PharmacyDto(java.util.UUID.randomUUID(), "Pharmacy B", "456 Elm St", null, null);
+    var pharmacyDto2 =
+        new PharmacyDto(java.util.UUID.randomUUID(), "Pharmacy B", "456 Elm St", null, null);
 
     when(pharmacyRepository.findAll()).thenReturn(Arrays.asList(pharmacyEntity1, pharmacyEntity2));
     when(dataMapper.toPharmacyDto(pharmacyEntity1)).thenReturn(pharmacyDto1);
