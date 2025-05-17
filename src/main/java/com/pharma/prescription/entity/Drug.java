@@ -44,7 +44,7 @@ public class Drug {
   private Set<PharmacyDrugAllocation> pharmacyAllocations;
 
   @Getter
-  @OneToMany(mappedBy = "drug")
+  @OneToMany(mappedBy = "drug", fetch = FetchType.LAZY)
   private Set<PrescriptionItem> prescriptionItems;
 
   @Getter
