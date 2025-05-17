@@ -5,9 +5,9 @@ import com.pharma.prescription.dto.PharmacyRequestDto;
 import com.pharma.prescription.entity.Pharmacy;
 import com.pharma.prescription.repository.PharmacyRepository;
 import com.pharma.prescription.shared.DataMapper;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,7 +18,7 @@ public class PharmacyService {
   private final PharmacyRepository pharmacyRepository;
   private final DataMapper dataMapper;
 
-
+  @Transactional(readOnly = true)
   public List<PharmacyDto> listAll() {
 
     return pharmacyRepository.findAll().stream()
