@@ -2,14 +2,14 @@ package com.pharma.prescription.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-@Data
 @Entity
 @Table(name = "pharmacies")
 @NoArgsConstructor
@@ -20,15 +20,21 @@ public class Pharmacy {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
+  @Getter
   @Column(name = "pharmacy_id", updatable = false, nullable = false, unique = true)
   private UUID pharmacyId;
 
+  @Getter
+  @Setter
   @Column(nullable = false, unique = true)
   private String name;
 
+  @Getter
+  @Setter
   @Column(nullable = false)
   private String address;
 
+  @Getter
   @OneToMany(
           mappedBy = "pharmacy",
           cascade = CascadeType.ALL,
@@ -36,6 +42,7 @@ public class Pharmacy {
           orphanRemoval = true)
   private Set<PharmacyDrugAllocation> drugAllocations = new HashSet<>();
 
+  @Getter
   @OneToMany(mappedBy = "pharmacy", fetch = FetchType.LAZY)
   private Set<Prescription> prescriptions;
 

@@ -20,8 +20,8 @@ class PharmacyControllerTest {
     PharmacyService pharmacyService = mock(PharmacyService.class);
     List<PharmacyDto> mockList =
             Arrays.asList(
-                    new PharmacyDto(java.util.UUID.randomUUID(), "123 Main St", "", null, null),
-                    new PharmacyDto(java.util.UUID.randomUUID(), "Pharmacy B", "456 Elm St", null, null));
+                    new PharmacyDto(java.util.UUID.randomUUID(), "123 Main St", ""),
+                    new PharmacyDto(java.util.UUID.randomUUID(), "Pharmacy B", "456 Elm St"));
     when(pharmacyService.listAll()).thenReturn(mockList);
 
     PharmacyController controller = new PharmacyController(pharmacyService);
@@ -37,7 +37,7 @@ class PharmacyControllerTest {
   void createPharmacy_createsAndReturnsPharmacy() {
     PharmacyService pharmacyService = mock(PharmacyService.class);
     PharmacyRequestDto requestDto = new PharmacyRequestDto("Pharmacy A", "789 Oak St");
-    PharmacyDto responseDto = new PharmacyDto(java.util.UUID.randomUUID(), "Pharmacy A", "789 Oak St", null, null);
+    PharmacyDto responseDto = new PharmacyDto(java.util.UUID.randomUUID(), "Pharmacy A", "789 Oak St");
     when(pharmacyService.create(requestDto)).thenReturn(responseDto);
 
     PharmacyController controller = new PharmacyController(pharmacyService);

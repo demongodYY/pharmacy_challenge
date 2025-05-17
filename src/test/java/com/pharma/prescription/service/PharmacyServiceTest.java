@@ -23,9 +23,9 @@ class PharmacyServiceTest {
 
     Pharmacy pharmacyEntity1 = mock(Pharmacy.class); // Use the actual entity
     Pharmacy pharmacyEntity2 = mock(Pharmacy.class);
-    var pharmacyDto1 = new PharmacyDto(java.util.UUID.randomUUID(), "323 Main St", "", null, null);
+    var pharmacyDto1 = new PharmacyDto(java.util.UUID.randomUUID(), "323 Main St", "");
     var pharmacyDto2 =
-            new PharmacyDto(java.util.UUID.randomUUID(), "Pharmacy B", "456 Elm St", null, null);
+            new PharmacyDto(java.util.UUID.randomUUID(), "Pharmacy B", "456 Elm St");
 
     when(pharmacyRepository.findAll()).thenReturn(Arrays.asList(pharmacyEntity1, pharmacyEntity2));
     when(dataMapper.toPharmacyDto(pharmacyEntity1)).thenReturn(pharmacyDto1);
@@ -52,7 +52,7 @@ class PharmacyServiceTest {
 
     var requestDto = new PharmacyRequestDto("Pharmacy X", "789 Oak Ave");
     var savedPharmacy = new Pharmacy("Pharmacy X", "789 Oak Ave");
-    var pharmacyDto = new PharmacyDto(java.util.UUID.randomUUID(), "Pharmacy X", "789 Oak Ave", null, null);
+    var pharmacyDto = new PharmacyDto(java.util.UUID.randomUUID(), "Pharmacy X", "789 Oak Ave");
 
     when(pharmacyRepository.save(any(Pharmacy.class))).thenReturn(savedPharmacy);
     when(dataMapper.toPharmacyDto(savedPharmacy)).thenReturn(pharmacyDto);
