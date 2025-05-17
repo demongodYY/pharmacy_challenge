@@ -3,7 +3,6 @@ plugins {
     id 'org.springframework.boot' version '3.4.5'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'checkstyle'
-    id("com.diffplug.spotless") version "6.25.0"
 }
 
 group = 'com.pharma'
@@ -43,15 +42,6 @@ checkstyle {
     configFile = rootProject.file("config/checkstyle.xml")
 }
 
-spotless {
-    java {
-        googleJavaFormat()
-        target("src/**/*.java")
-        trimTrailingWhitespace()
-        endWithNewline()
-    }
-}
-
 
 tasks.named('test') {
     useJUnitPlatform()
@@ -64,4 +54,4 @@ tasks.withType(Checkstyle).configureEach {
     }
 }
 
-tasks.named("check") { dependsOn("checkstyleMain", "checkstyleTest", "spotlessCheck") }
+tasks.named("check") { dependsOn("checkstyleMain", "checkstyleTest") }
