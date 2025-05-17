@@ -1,14 +1,10 @@
 package com.pharma.prescription.shared;
 
-import com.pharma.prescription.dto.DrugDto;
-import com.pharma.prescription.dto.PharmacyDrugAllocationDto;
-import com.pharma.prescription.dto.PharmacyDto;
-import com.pharma.prescription.dto.PrescriptionDto;
-import com.pharma.prescription.entity.Drug;
-import com.pharma.prescription.entity.Pharmacy;
-import com.pharma.prescription.entity.PharmacyDrugAllocation;
-import com.pharma.prescription.entity.Prescription;
+import com.pharma.prescription.dto.*;
+import com.pharma.prescription.entity.*;
 import org.springframework.stereotype.Component;
+
+import java.util.stream.Collectors;
 
 @Component
 public class DataMapper {
@@ -52,10 +48,38 @@ public class DataMapper {
             prescription.getPrescriptionId(),
             prescription.getPatientId(),
             toPharmacyDto(prescription.getPharmacy()),
-            prescription.getPrescriptionItems(),
+            prescription.getPrescriptionItems().stream()
+                    .map(this::toPrescriptionItemDto)
+                    .collect(Collectors.toSet()),
             prescription.getStatus(),
             prescription.getPrescriptionDate(),
             prescription.getFulfillmentDate()
+    );
+  }
+
+  public PrescriptionItemDto toPrescriptionItemDto(PrescriptionItem prescriptionItem) {
+    if (prescriptionItem == null) return null;
+
+    return new PrescriptionItemDto(
+            prescriptionItem.getDosage(),
+            toDrugDto(prescriptionItem.getDrug()),
+            prescriptionItem.getPrescription().getPrescriptionId()
+    );
+  }
+
+  public AuditLogDto toAuditLogDto(AuditLog auditLog) {
+    if (auditLog == null) return null;
+
+    return new AuditLogDto(
+            auditLog.getLogId(),
+            auditLog.getPrescriptionId(),
+            auditLog.getPatientId(),
+            auditLog.getPharmacyId(),
+            auditLog.getDrugsRequested(),
+            auditLog.getDrugsDispensed(),
+            auditLog.getStatus(),
+            auditLog.getFailureReasons(),
+            auditLog.getTimestamp()
     );
   }
 }

@@ -22,13 +22,13 @@ public class AuditLog {
   @Column(name = "log_id", updatable = false, nullable = false, unique = true)
   private UUID logId;
 
-  @Column(nullable = false)
+  @Column(name = "prescription_public_id", nullable = false)
   private UUID prescriptionId; // Link to the prescription's public ID
 
   @Column(nullable = false)
   private String patientId;
 
-  @Column(nullable = false)
+  @Column(name = "pharmacy_public_id", nullable = false)
   private UUID pharmacyId;
 
   @Column(columnDefinition = "TEXT")
@@ -55,5 +55,17 @@ public class AuditLog {
     if (timestamp == null) {
       timestamp = LocalDateTime.now();
     }
+  }
+
+  public AuditLog(UUID prescriptionId, String patientId, UUID pharmacyId,
+                  String drugsRequested, String drugsDispensed, AuditLogStatus status,
+                  String failureReasons) {
+    this.prescriptionId = prescriptionId;
+    this.patientId = patientId;
+    this.pharmacyId = pharmacyId;
+    this.drugsRequested = drugsRequested;
+    this.drugsDispensed = drugsDispensed;
+    this.status = status;
+    this.failureReasons = failureReasons;
   }
 }
