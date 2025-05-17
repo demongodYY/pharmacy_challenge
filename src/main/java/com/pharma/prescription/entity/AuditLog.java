@@ -23,13 +23,13 @@ public class AuditLog {
   private UUID logId;
 
   @Column(nullable = false)
-  private UUID prescriptionPublicId; // Link to the prescription's public ID
+  private UUID prescriptionId; // Link to the prescription's public ID
 
   @Column(nullable = false)
   private String patientId;
 
   @Column(nullable = false)
-  private UUID pharmacyPublicId;
+  private UUID pharmacyId;
 
   @Column(columnDefinition = "TEXT")
   private String drugsRequested;

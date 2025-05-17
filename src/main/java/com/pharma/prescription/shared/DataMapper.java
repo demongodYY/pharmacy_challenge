@@ -3,9 +3,11 @@ package com.pharma.prescription.shared;
 import com.pharma.prescription.dto.DrugDto;
 import com.pharma.prescription.dto.PharmacyDrugAllocationDto;
 import com.pharma.prescription.dto.PharmacyDto;
+import com.pharma.prescription.dto.PrescriptionDto;
 import com.pharma.prescription.entity.Drug;
 import com.pharma.prescription.entity.Pharmacy;
 import com.pharma.prescription.entity.PharmacyDrugAllocation;
+import com.pharma.prescription.entity.Prescription;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -40,6 +42,20 @@ public class DataMapper {
             pharmacyDrugAllocation.getDrug().getDrugId(),
             pharmacyDrugAllocation.isContracted(),
             pharmacyDrugAllocation.getAllocated()
+    );
+  }
+
+  public PrescriptionDto toPrescriptionDto(Prescription prescription) {
+    if (prescription == null) return null;
+
+    return new PrescriptionDto(
+            prescription.getPrescriptionId(),
+            prescription.getPatientId(),
+            toPharmacyDto(prescription.getPharmacy()),
+            prescription.getPrescriptionItems(),
+            prescription.getStatus(),
+            prescription.getPrescriptionDate(),
+            prescription.getFulfillmentDate()
     );
   }
 }

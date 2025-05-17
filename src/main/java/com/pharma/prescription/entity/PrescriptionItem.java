@@ -2,6 +2,7 @@ package com.pharma.prescription.entity;
 
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
@@ -16,18 +17,22 @@ public class PrescriptionItem {
   @EqualsAndHashCode.Include
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "prescription_id", nullable = false)
+  @Getter
   private Prescription prescription;
 
+  @Getter
   @EqualsAndHashCode.Include
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "drug_id", nullable = false)
   private Drug drug;
 
+  @Getter
   @Column(nullable = false)
-  private String dosage; // e.g., "1 tablet", "10mg"
+  private Integer dosage;
 
-  @Column(nullable = false)
-  private Integer requestedQuantity;
-
-  private Integer dispensedQuantity; // Will be set upon successful fulfillment
+  public PrescriptionItem(Prescription prescription, Drug drug, Integer dosage) {
+    this.prescription = prescription;
+    this.drug = drug;
+    this.dosage = dosage;
+  }
 }
