@@ -6,6 +6,8 @@ import com.pharma.prescription.dto.PharmacyDragAllocationRequestDto;
 import com.pharma.prescription.dto.PharmacyDrugAllocationDto;
 import com.pharma.prescription.entity.Drug;
 import com.pharma.prescription.entity.PharmacyDrugAllocation;
+import com.pharma.prescription.exception.BusinessRuleException;
+import com.pharma.prescription.exception.ResourceNotFoundException;
 import com.pharma.prescription.repository.DrugRepository;
 import com.pharma.prescription.repository.PharmacyDrugAllocationRepository;
 import com.pharma.prescription.repository.PharmacyRepository;
@@ -16,6 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
+
+import static com.pharma.prescription.exception.ErrorMessages.getAllocatedAmountExceedsStockMessage;
+import static com.pharma.prescription.exception.ErrorMessages.getNotFoundMessage;
 
 @Service
 @RequiredArgsConstructor
@@ -44,19 +49,19 @@ public class DrugService {
           UUID drugId,
           List<PharmacyDragAllocationRequestDto> pharmacyDragAllocationRequestDtos) {
     var drug = drugRepository.findByDrugId(drugId)
-            .orElseThrow(() -> new RuntimeException("Drug not found"));
+            .orElseThrow(() -> new ResourceNotFoundException(getNotFoundMessage("Drug", drugId)));
     var totalAllocated = pharmacyDragAllocationRequestDtos.stream()
             .map(PharmacyDragAllocationRequestDto::getAllocated)
             .reduce(0, Integer::sum);
     if (totalAllocated > drug.getStock()) {
-      throw new RuntimeException("Total allocated exceeds total stock");
+      throw new BusinessRuleException(getAllocatedAmountExceedsStockMessage(totalAllocated, drug.getStock()));
     }
 
     List<PharmacyDrugAllocationDto> allocatedDrugs = new java.util.ArrayList<>(List.of());
 
     for (PharmacyDragAllocationRequestDto pharmacyDragAllocationRequestDto : pharmacyDragAllocationRequestDtos) {
       var pharmacy = pharmacyRepository.findByPharmacyId(pharmacyDragAllocationRequestDto.getPharmacyId())
-              .orElseThrow(() -> new RuntimeException("pharmacy not found"));
+              .orElseThrow(() -> new ResourceNotFoundException(getNotFoundMessage("Pharmacy", pharmacyDragAllocationRequestDto.getPharmacyId())));
       var existedPharmacyDrugAllocation = pharmacyDrugAllocationRepository.findByPharmacyPublicIdAndDrugPublicId(
               pharmacy.getPharmacyId(),
               drug.getDrugId()

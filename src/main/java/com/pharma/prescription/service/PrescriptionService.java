@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import static com.pharma.prescription.exception.ErrorMessages.*;
+
 @Service
 @RequiredArgsConstructor
 public class PrescriptionService {
@@ -37,33 +39,34 @@ public class PrescriptionService {
   @Transactional
   public PrescriptionDto create(PrescriptionRequestDto prescriptionRequestDto) {
     if (prescriptionRequestDto.getPrescriptionItems().isEmpty()) {
-      throw new BusinessRuleException("Prescription must contain at least one item");
+      throw new BusinessRuleException(getPrescriptionItemsCountMessage());
     }
 
     Pharmacy pharmacy = pharmacyRepository.findByPharmacyId(prescriptionRequestDto.getPharmacyId())
-            .orElseThrow(() -> new ResourceNotFoundException("Pharmacy not found: " + prescriptionRequestDto.getPharmacyId()));
+            .orElseThrow(() -> new ResourceNotFoundException(getNotFoundMessage("Pharmacy", prescriptionRequestDto.getPharmacyId())));
     Prescription prescription = new Prescription(prescriptionRequestDto.getPatientId(), pharmacy);
     Prescription savedPrescription = prescriptionRepository.save(prescription);
 
     for (PrescriptionItemRequestDto itemRequest : prescriptionRequestDto.getPrescriptionItems()) {
       Drug drug = drugRepository.findByDrugId(itemRequest.getDragId())
-              .orElseThrow(() -> new ResourceNotFoundException("Drug not found: " + itemRequest.getDragId()));
+              .orElseThrow(() -> new ResourceNotFoundException(getNotFoundMessage("Drug", itemRequest.getDragId())));
 
       // 1. Check Drug Expiry
       if (drug.getExpiryDate().isBefore(LocalDate.now())) {
-        throw new BusinessRuleException("Drug is expired: " + drug.getDrugId());
+        throw new BusinessRuleException(getDrugExpiredMessage(drug));
       }
 
       // 2. Check Pharmacy Contract and Allocation
       PharmacyDrugAllocation allocation = allocationRepository
               .findByPharmacyPublicIdAndDrugPublicId(pharmacy.getPharmacyId(), drug.getDrugId())
-              .orElseThrow(() -> new ResourceNotFoundException(
-                      "Drug allocation is not allocated for this pharmacy: " + itemRequest.getDragId()));
+              .orElseThrow(() -> new BusinessRuleException(
+                      getNotAllocationMessage(itemRequest.getDragId(), pharmacy.getPharmacyId())
+              ));
       if (!allocation.isContracted()) {
-        throw new BusinessRuleException("Pharmacy is not contracted for this drug: " + drug.getDrugId());
+        throw new BusinessRuleException(getDrugNotContractedMessage(drug));
       }
       if (itemRequest.getDosage() > allocation.getAllocated()) {
-        throw new BusinessRuleException("Dosage exceeds allocated amount: " + itemRequest.getDosage());
+        throw new BusinessRuleException(getDosageExceedsAllocatedMessage(itemRequest.getDosage()));
       }
 
       PrescriptionItem pItem = new PrescriptionItem(savedPrescription, drug, itemRequest.getDosage());
@@ -75,27 +78,23 @@ public class PrescriptionService {
   @Transactional
   public PrescriptionDto fulfillPrescription(UUID prescriptionId) {
     Prescription prescription = prescriptionRepository.findByPrescriptionId(prescriptionId)
-            .orElseThrow(() -> new ResourceNotFoundException("Prescription not found: " + prescriptionId));
+            .orElseThrow(() -> new ResourceNotFoundException(getNotFoundMessage("Prescription", prescriptionId)));
 
     if (prescription.getStatus() != PrescriptionStatus.PENDING) {
-      throw new BusinessRuleException("Prescription is not in a state that can be fulfilled: " + prescription.getStatus());
+      throw new BusinessRuleException(getPrescriptionStatusErrorMessage(prescription));
     }
 
-    StringBuilder fulfillmentFailures = new StringBuilder();
+
     List<Drug> drugsToUpdate = new ArrayList<>();
     String requestedJson = toRequestDrugs(prescription.getPrescriptionItems());
 
     for (PrescriptionItem item : prescription.getPrescriptionItems()) {
       Drug drug = item.getDrug();
       if (item.getDosage() > drug.getStock()) {
-        fulfillmentFailures.append("Insufficient stock for drug ")
-                .append(drug.getName()).append(" during fulfillment. Requested: ")
-                .append(item.getDosage()).append(", Available: ")
-                .append(drug.getStock()).append(". ");
         prescriptionStatusService.updatePrescriptionStatus(prescription, PrescriptionStatus.FAILED_FULFILLMENT);
         auditLogService.logAttempt(prescription.getPrescriptionId(), prescription.getPatientId(), prescription.getPharmacy().getPharmacyId(),
-                requestedJson, null, AuditLogStatus.FAILURE, fulfillmentFailures.toString());
-        throw new BusinessRuleException("Prescription fulfillment failed: " + fulfillmentFailures);
+                requestedJson, null, AuditLogStatus.FAILURE, getFulfilmentStockOverflowFailureMessage(item, drug));
+        throw new BusinessRuleException(getFulfilmentStockOverflowFailureMessage(item, drug));
       } else {
         drug.setStock(drug.getStock() - item.getDosage());
         drugsToUpdate.add(drug);
@@ -108,8 +107,8 @@ public class PrescriptionService {
     } catch (ObjectOptimisticLockingFailureException e) {
       prescriptionStatusService.updatePrescriptionStatus(prescription, PrescriptionStatus.FAILED_FULFILLMENT);
       auditLogService.logAttempt(prescription.getPrescriptionId(), prescription.getPatientId(), prescription.getPharmacy().getPharmacyId(),
-              requestedJson, null, AuditLogStatus.FAILURE, "Concurrent stock modification detected.");
-      throw new BusinessRuleException("Fulfillment failed due to concurrent drug stock update.", e);
+              requestedJson, null, AuditLogStatus.FAILURE, getFulfilmentConcurrentFailedMessage());
+      throw new BusinessRuleException(getFulfilmentConcurrentFailedMessage(), e);
     }
 
     prescription.setStatus(PrescriptionStatus.FULFILLED);
@@ -121,7 +120,6 @@ public class PrescriptionService {
 
     return dataMapper.toPrescriptionDto(savedPrescription);
   }
-
 
   private String toRequestDrugs(Set<PrescriptionItem> prescriptionItems) {
     StringBuilder sb = new StringBuilder();

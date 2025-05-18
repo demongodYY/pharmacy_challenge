@@ -1,5 +1,6 @@
 package com.pharma.prescription.exception;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,12 +16,13 @@ import java.util.Map;
 @Slf4j
 public class GlobalExceptionHandler {
 
-  private static class ErrorResponse {
-    public LocalDateTime timestamp;
-    public int status;
-    public String error;
-    public String message;
-    public Map<String, String> fieldErrors; // For validation errors
+  @Getter
+  private static class ErrorResponse implements IErrorResponse {
+    LocalDateTime timestamp;
+    int status;
+    String error;
+    String message;
+    Map<String, String> fieldErrors; // For validation errors
 
     public ErrorResponse(HttpStatus httpStatus, String message) {
       this.timestamp = LocalDateTime.now();

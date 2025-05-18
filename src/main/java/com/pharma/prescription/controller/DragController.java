@@ -33,6 +33,10 @@ public class DragController {
           description = "Drug allocated successfully",
           content = @Content(mediaType = "application/json",
                   schema = @Schema(implementation = PharmacyDrugAllocationDto.class)))
+  @ApiResponse(responseCode = "400",
+          description = "Drug allocated failed",
+          content = @Content(mediaType = "application/json",
+                  schema = @Schema(implementation = PharmacyDrugAllocationDto.class)))
   public ResponseEntity<List<PharmacyDrugAllocationDto>> allocateDrugToPharmacy(
           @PathVariable("id") UUID drugId,
           @RequestBody List<PharmacyDragAllocationRequestDto> pharmacyDragAllocationRequestDtos) {
