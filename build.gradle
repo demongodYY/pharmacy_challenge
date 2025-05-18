@@ -3,6 +3,7 @@ plugins {
     id 'org.springframework.boot' version '3.4.5'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'checkstyle'
+    id 'jacoco'
 }
 
 group = 'com.pharma'
@@ -43,9 +44,19 @@ checkstyle {
     configFile = rootProject.file("config/checkstyle.xml")
 }
 
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.70
+            }
+        }
+    }
+}
 
 tasks.named('test') {
     useJUnitPlatform()
+    finalizedBy 'jacocoTestCoverageVerification'
 }
 
 tasks.withType(Checkstyle).configureEach {
