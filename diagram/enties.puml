@@ -39,25 +39,23 @@ entity Prescription {
   pharmacy_id: Long <<FK>>
   patientId: String
   status: PrescriptionStatus
+  version: Long
   prescriptionDate: LocalDateTime
   fulfillmentDate: LocalDateTime
-  failureReason: String
 }
 
 entity PrescriptionItem {
   id: Long <<PK>>
   prescription_id: Long <<FK>>
   drug_id: Long <<FK>>
-  dosage: String
-  requestedQuantity: Integer
-  dispensedQuantity: Integer
+  dosage: Integer
 }
 
 entity AuditLog {
   id: Long <<PK>>
-  prescriptionPublicId: UUID ' Conceptual FK to Prescription.publicId
+  prescriptionId: UUID ' Conceptual FK to Prescription.publicId
   patientId: String
-  pharmacyPublicId: UUID ' Conceptual FK to Pharmacy.publicId
+  pharmacyId: UUID ' Conceptual FK to Pharmacy.publicId
   drugsRequested: String
   drugsDispensed: String
   status: AuditLogStatus
