@@ -24,6 +24,14 @@
             <property name="braceAdjustment" value="0"/>
             <property name="severity" value="error"/>
         </module>
+        <module name="EmptyStatement"/>
+        <module name="EqualsHashCode"/>
+        <module name="IllegalInstantiation"/>
+        <module name="InnerAssignment"/>
+        <module name="MissingSwitchDefault"/>
+        <module name="MultipleVariableDeclarations"/>
+        <module name="SimplifyBooleanExpression"/>
+        <module name="SimplifyBooleanReturn"/>
     </module>
     <module name="LineLength">
         <property name="max" value="150"/>
