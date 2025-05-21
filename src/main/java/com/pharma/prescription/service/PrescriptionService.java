@@ -49,25 +49,8 @@ public class PrescriptionService {
     for (PrescriptionItemRequestDto itemRequest : prescriptionRequestDto.getPrescriptionItems()) {
       Drug drug = drugRepository.findByDrugId(itemRequest.getDragId())
               .orElseThrow(() -> new ResourceNotFoundException(getNotFoundMessage("Drug", itemRequest.getDragId())));
-
-      // 1. Check Drug Expiry
-      if (drug.isExpired()) {
-        throw new BusinessRuleException(getDrugExpiredMessage(drug));
-      }
-
-      // 2. Check Pharmacy Contract and Allocation
-      PharmacyDrugAllocation allocation = allocationRepository
-              .findByPharmacyPublicIdAndDrugPublicId(pharmacy.getPharmacyId(), drug.getDrugId())
-              .orElseThrow(() -> new BusinessRuleException(
-                      getNotAllocationMessage(itemRequest.getDragId(), pharmacy.getPharmacyId())
-              ));
-      if (!allocation.isContracted()) {
-        throw new BusinessRuleException(getDrugNotContractedMessage(drug));
-      }
-      if (itemRequest.getDosage() > allocation.getAllocated()) {
-        throw new BusinessRuleException(getDosageExceedsAllocatedMessage(itemRequest.getDosage()));
-      }
-
+      checkDrugExpiredDate(drug);
+      checkDrugAllocationValid(itemRequest, pharmacy, drug);
       PrescriptionItem pItem = new PrescriptionItem(savedPrescription, drug, itemRequest.getDosage());
       prescriptionItemRepository.save(pItem);
     }
@@ -78,15 +61,54 @@ public class PrescriptionService {
   public PrescriptionDto fulfillPrescription(UUID prescriptionId) {
     Prescription prescription = prescriptionRepository.findByPrescriptionId(prescriptionId)
             .orElseThrow(() -> new ResourceNotFoundException(getNotFoundMessage("Prescription", prescriptionId)));
-
     if (prescription.getStatus() != PrescriptionStatus.PENDING) {
       throw new BusinessRuleException(getPrescriptionStatusErrorMessage(prescription));
     }
 
-
-    List<Drug> drugsToUpdate = new ArrayList<>();
     String requestedJson = toRequestDrugs(prescription.getPrescriptionItems());
+    List<Drug> drugsToUpdate = checkDrugsToUpdate(prescription, requestedJson);
 
+    // All good, update drug stocks and prescription
+    try {
+      drugRepository.saveAll(drugsToUpdate);
+    } catch (ObjectOptimisticLockingFailureException e) {
+      prescriptionStatusService.updatePrescriptionStatus(prescription, PrescriptionStatus.FAILED_FULFILLMENT);
+      auditLogService.logAttempt(prescription.getPrescriptionId(), prescription.getPatientId(), prescription.getPharmacy().getPharmacyId(),
+              requestedJson, null, AuditLogStatus.FAILURE, getFulfilmentConcurrentFailedMessage());
+      throw new BusinessRuleException(getFulfilmentConcurrentFailedMessage(), e);
+    }
+    prescription.setStatus(PrescriptionStatus.FULFILLED);
+    prescription.setFulfillmentDate(LocalDateTime.now());
+    Prescription savedPrescription = prescriptionRepository.save(prescription);
+    String dispensedJson = toDrugsDispensed(savedPrescription.getPrescriptionItems());
+    auditLogService.logAttempt(prescription.getPrescriptionId(), prescription.getPatientId(), prescription.getPharmacy().getPharmacyId(),
+            requestedJson, dispensedJson, AuditLogStatus.SUCCESS, null);
+
+    return dataMapper.toPrescriptionDto(savedPrescription);
+  }
+
+  private static void checkDrugExpiredDate(Drug drug) {
+    if (drug.isExpired()) {
+      throw new BusinessRuleException(getDrugExpiredMessage(drug));
+    }
+  }
+
+  private void checkDrugAllocationValid(PrescriptionItemRequestDto itemRequest, Pharmacy pharmacy, Drug drug) {
+    PharmacyDrugAllocation allocation = allocationRepository
+            .findByPharmacyPublicIdAndDrugPublicId(pharmacy.getPharmacyId(), drug.getDrugId())
+            .orElseThrow(() -> new BusinessRuleException(
+                    getNotAllocationMessage(itemRequest.getDragId(), pharmacy.getPharmacyId())
+            ));
+    if (!allocation.isContracted()) {
+      throw new BusinessRuleException(getDrugNotContractedMessage(drug));
+    }
+    if (itemRequest.getDosage() > allocation.getAllocated()) {
+      throw new BusinessRuleException(getDosageExceedsAllocatedMessage(itemRequest.getDosage()));
+    }
+  }
+
+  private List<Drug> checkDrugsToUpdate(Prescription prescription, String requestedJson) {
+    List<Drug> drugsToUpdate = new ArrayList<>();
     for (PrescriptionItem item : prescription.getPrescriptionItems()) {
       Drug drug = item.getDrug();
       if (item.getDosage() > drug.getStock()) {
@@ -99,25 +121,7 @@ public class PrescriptionService {
         drugsToUpdate.add(drug);
       }
     }
-
-    // All good, update stocks and prescription
-    try {
-      drugRepository.saveAll(drugsToUpdate);
-    } catch (ObjectOptimisticLockingFailureException e) {
-      prescriptionStatusService.updatePrescriptionStatus(prescription, PrescriptionStatus.FAILED_FULFILLMENT);
-      auditLogService.logAttempt(prescription.getPrescriptionId(), prescription.getPatientId(), prescription.getPharmacy().getPharmacyId(),
-              requestedJson, null, AuditLogStatus.FAILURE, getFulfilmentConcurrentFailedMessage());
-      throw new BusinessRuleException(getFulfilmentConcurrentFailedMessage(), e);
-    }
-
-    prescription.setStatus(PrescriptionStatus.FULFILLED);
-    prescription.setFulfillmentDate(LocalDateTime.now());
-    Prescription savedPrescription = prescriptionRepository.save(prescription);
-    String dispensedJson = toDrugsDispensed(savedPrescription.getPrescriptionItems());
-    auditLogService.logAttempt(prescription.getPrescriptionId(), prescription.getPatientId(), prescription.getPharmacy().getPharmacyId(),
-            requestedJson, dispensedJson, AuditLogStatus.SUCCESS, null);
-
-    return dataMapper.toPrescriptionDto(savedPrescription);
+    return drugsToUpdate;
   }
 
   private String toRequestDrugs(Set<PrescriptionItem> prescriptionItems) {
