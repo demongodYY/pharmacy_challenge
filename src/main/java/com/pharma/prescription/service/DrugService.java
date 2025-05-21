@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -57,7 +58,7 @@ public class DrugService {
       throw new BusinessRuleException(getAllocatedAmountExceedsStockMessage(totalAllocated, drug.getStock()));
     }
 
-    List<PharmacyDrugAllocationDto> allocatedDrugs = new java.util.ArrayList<>(List.of());
+    List<PharmacyDrugAllocationDto> allocatedDrugs = new ArrayList<>(List.of());
 
     for (PharmacyDragAllocationRequestDto pharmacyDragAllocationRequestDto : pharmacyDragAllocationRequestDtos) {
       var pharmacy = pharmacyRepository.findByPharmacyId(pharmacyDragAllocationRequestDto.getPharmacyId())
