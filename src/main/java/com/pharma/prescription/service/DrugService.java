@@ -51,15 +51,9 @@ public class DrugService {
           List<PharmacyDragAllocationRequestDto> pharmacyDragAllocationRequestDtos) {
     var drug = drugRepository.findByDrugId(drugId)
             .orElseThrow(() -> new ResourceNotFoundException(getNotFoundMessage("Drug", drugId)));
-    var totalAllocated = pharmacyDragAllocationRequestDtos.stream()
-            .map(PharmacyDragAllocationRequestDto::getAllocated)
-            .reduce(0, Integer::sum);
-    if (totalAllocated > drug.getStock()) {
-      throw new BusinessRuleException(getAllocatedAmountExceedsStockMessage(totalAllocated, drug.getStock()));
-    }
+    checkDrugAllocationAmountWithStock(pharmacyDragAllocationRequestDtos, drug);
 
     List<PharmacyDrugAllocationDto> allocatedDrugs = new ArrayList<>(List.of());
-
     for (PharmacyDragAllocationRequestDto pharmacyDragAllocationRequestDto : pharmacyDragAllocationRequestDtos) {
       var pharmacy = pharmacyRepository.findByPharmacyId(pharmacyDragAllocationRequestDto.getPharmacyId())
               .orElseThrow(() -> new ResourceNotFoundException(getNotFoundMessage("Pharmacy", pharmacyDragAllocationRequestDto.getPharmacyId())));
@@ -83,5 +77,14 @@ public class DrugService {
       }
     }
     return allocatedDrugs;
+  }
+
+  private static void checkDrugAllocationAmountWithStock(List<PharmacyDragAllocationRequestDto> pharmacyDragAllocationRequestDtos, Drug drug) {
+    var totalAllocated = pharmacyDragAllocationRequestDtos.stream()
+            .map(PharmacyDragAllocationRequestDto::getAllocated)
+            .reduce(0, Integer::sum);
+    if (totalAllocated > drug.getStock()) {
+      throw new BusinessRuleException(getAllocatedAmountExceedsStockMessage(totalAllocated, drug.getStock()));
+    }
   }
 }
