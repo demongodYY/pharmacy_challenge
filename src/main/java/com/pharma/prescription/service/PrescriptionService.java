@@ -15,7 +15,6 @@ import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,7 +51,7 @@ public class PrescriptionService {
               .orElseThrow(() -> new ResourceNotFoundException(getNotFoundMessage("Drug", itemRequest.getDragId())));
 
       // 1. Check Drug Expiry
-      if (drug.getExpiryDate().isBefore(LocalDate.now())) {
+      if (drug.isExpired()) {
         throw new BusinessRuleException(getDrugExpiredMessage(drug));
       }
 
