@@ -33,16 +33,15 @@ public class DrugService {
   private final PharmacyDrugAllocationRepository pharmacyDrugAllocationRepository;
 
   public DrugDto create(DrugRequestDto drugRequestDto) {
-    var DrugEntity = new Drug(
+    var drugEntity = new Drug(
             drugRequestDto.getName(),
             drugRequestDto.getManufacturer(),
             drugRequestDto.getBatchNumber(),
             drugRequestDto.getExpiryDate(),
             drugRequestDto.getStock()
     );
-    var savedDrug = drugRepository.save(DrugEntity);
+    var savedDrug = drugRepository.save(drugEntity);
     return dataMapper.toDrugDto(savedDrug);
-
   }
 
   @Transactional

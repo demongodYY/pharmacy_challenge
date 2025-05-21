@@ -35,7 +35,7 @@ public class PrescriptionController {
           content = @Content(mediaType = "application/json",
                   schema = @Schema(implementation = IErrorResponse.class)))
   public ResponseEntity<PrescriptionDto> createPrescription(
-          @RequestBody PrescriptionRequestDto prescriptionRequestDto) {
+          @RequestBody final PrescriptionRequestDto prescriptionRequestDto) {
     return ResponseEntity.ok().body(prescriptionService.create(prescriptionRequestDto));
   }
 

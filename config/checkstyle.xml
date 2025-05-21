@@ -6,15 +6,20 @@
 <!-- Minimal Google‑style subset; extend as you like -->
 <module name="Checker">
     <module name="TreeWalker">
+        <module name="ConstantName"/>
+        <module name="LocalVariableName"/>
+        <module name="MemberName"/>
+        <module name="PackageName"/>
+        <module name="ParameterName"/>
+        <module name="StaticVariableName"/>
+        <module name="TypeName"/>
         <module name="UnusedImports"/>
-
         <module name="Indentation">
             <property name="tabWidth" value="2"/>
             <property name="basicOffset" value="2"/>
             <property name="braceAdjustment" value="0"/>
             <property name="severity" value="error"/>
         </module>
-
     </module>
     <module name="LineLength">
         <property name="max" value="150"/>

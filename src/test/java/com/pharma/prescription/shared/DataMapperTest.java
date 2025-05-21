@@ -71,7 +71,7 @@ class DataMapperTest {
 
     assertNotNull(dto);
     assertEquals(pharmacyId, dto.getPharmacyId());
-    assertEquals(drugId, dto.getDrug_id());
+    assertEquals(drugId, dto.getDrugId());
     assertTrue(dto.isContracted());
     assertEquals(50, dto.getAllocated());
   }

@@ -11,7 +11,7 @@ import java.util.UUID;
 @Value
 public class PharmacyDrugAllocationDto implements Serializable {
   UUID pharmacyId;
-  UUID drug_id;
+  UUID drugId;
   boolean contracted;
   int allocated;
 }
