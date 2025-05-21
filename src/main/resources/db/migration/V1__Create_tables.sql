@@ -10,7 +10,7 @@ CREATE TABLE drugs (
                        manufacturer VARCHAR(255) NOT NULL,           -- Manufacturer of the drug
                        batch_number VARCHAR(255) NOT NULL UNIQUE,    -- Unique batch number for the drug
                        expiry_date DATE NOT NULL,                    -- Expiry date of the drug batch
-                       stock INTEGER NOT NULL CHECK (stock >= 0),    -- Current stock quantity
+                       stock INTEGER NOT NULL CHECK (stock >= 0)   -- Current stock quantity
 );
 
 
