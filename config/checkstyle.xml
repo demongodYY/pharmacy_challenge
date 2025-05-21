@@ -16,6 +16,8 @@
         <module name="UnusedImports"/>
         <module name="IllegalImport"/>
         <module name="RedundantImport"/>
+        <module name="MethodLength"/>
+        <module name="ParameterNumber"/>
         <module name="Indentation">
             <property name="tabWidth" value="2"/>
             <property name="basicOffset" value="2"/>
