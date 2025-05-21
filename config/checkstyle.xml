@@ -14,6 +14,8 @@
         <module name="StaticVariableName"/>
         <module name="TypeName"/>
         <module name="UnusedImports"/>
+        <module name="IllegalImport"/>
+        <module name="RedundantImport"/>
         <module name="Indentation">
             <property name="tabWidth" value="2"/>
             <property name="basicOffset" value="2"/>
